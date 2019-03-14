@@ -2,14 +2,18 @@
 #include "std_msgs/String.h"
 #include <visualization_msgs/Marker.h>
 #include <delphi_esr_msgs/EsrTrack.h>
- 
+#include <radar_target/myEsrTrack.h>
+#include <math.h> 
+
+#define ANG_RAD M_PI/180
 class SubscribeAndPublish
 {
 public:
   SubscribeAndPublish()
   {
     //Topic you want to publish
-    pub_ = n_.advertise<delphi_esr_msgs::EsrTrack>("observer", 1000);
+    pub_ = n_.advertise<radar_target::myEsrTrack>("observer_position", 1000);
+    //n_.advertise<delphi_esr_msgs::EsrTrack>("observer", 1000);
     //n_.advertise<PUBLISHED_MESSAGE_TYPE>("/published_topic", 1);
  
     //Topic you want to subscribe
@@ -33,13 +37,19 @@ public:
     //ROS_INFO("Hello callback");
     //ROS_INFO("I heard:x=%f",msg.pose.position.x);
     //ROS_INFO();
-    delphi_esr_msgs::EsrTrack output;
+    //delphi_esr_msgs::EsrTrack output01;
+    radar_target::myEsrTrack output;
     //output = input;
     if (input.track_range < 40)
-        output = input;
-        output.header.frame_id = "base_link";
+        //output01 = input;
+        output.header = input.header;
+        output.canmsg = input.canmsg;
+	output.xr = input.track_range*sin(input.track_angle*ANG_RAD);
+	output.yr = input.track_range*cos(input.track_angle*ANG_RAD);
+	output.zr = 0.0;
+ 	
     pub_.publish(output);
-  }
+  } 
 
  
 private:
